@@ -8,6 +8,7 @@ using Autodesk.AutoCAD.Runtime;
 using System;
 using System.Collections.Generic;
 using hand = AgileBIM.FabWrapper.TypeHandlers;
+using System.Linq;
 
 [assembly: ExtensionApplication(typeof(AgileBIM.FabWrapper.INI))]
 [assembly: CommandClass(typeof(AgileBIM.FabWrapper.APIwrappers))]
@@ -16,20 +17,21 @@ namespace AgileBIM.FabWrapper
 {
     //Initialization
     public class INI : IExtensionApplication
-    {       
+    {
+        public Assembly assymblyRef;
         public void Initialize()
         {
-            // tested this generic entry point on 2017 & 2018. I presume this would work on 2016 as well.
-            int cv = (Autodesk.AutoCAD.ApplicationServices.Application.Version.Major - 22) + 2018;
-            Assembly.LoadFrom("C:\\Program Files\\Autodesk\\Fabrication " + cv + "\\CADmep\\FabricationAPI.dll");
-            Autodesk.AutoCAD.EditorInput.Editor ed = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
-            ed.WriteMessage("\nFabWrapper 1.0 has successfully loaded");
-            ed.WriteMessage("\nVisit www.houseofbim.com for documentation and version updates.");
+            var acadpath = System.Diagnostics.Process.GetProcessesByName("acad").FirstOrDefault().MainModule.FileName;
+            var year = new String(acadpath.ToCharArray().Where(p => char.IsDigit(p) == true).ToArray());
+            try
+            { assymblyRef = Assembly.LoadFrom("C:\\Program Files\\Autodesk\\Fabrication " + year.ToString() + "\\CADmep\\FabricationAPI.dll"); }
+            catch (System.Exception ex)
+            { Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage(ex.Message); }
         }
         public void Terminate() { }
     }
 
-    
+
     //Lisp Functions
     public class APIwrappers
     {
