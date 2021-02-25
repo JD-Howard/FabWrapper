@@ -3,3 +3,4 @@
 /packages
 /Builds/**/*.xml
 /Builds/**/*.pdb
+*.ds_store
